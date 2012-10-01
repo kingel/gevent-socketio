@@ -159,9 +159,17 @@ def decode(rawstr, json_loads=default_json_loads):
         else:
             decoded_msg['name'] = data.pop('name')
             if 'args' in data:
-                decoded_msg['args'] = data['args']
+                if len(data['args']) == 1 and isinstance(data['args'][0], dict):
+                    # Fix for the http://bugs.python.org/issue4978 for older Python versions
+                    str_args = dict((str(x), y) for x, y in data['args'][0].iteritems())
+                    decoded_msg['kwargs'] = str_args
+                    decoded_msg['args'] = []
+                else:
+                    decoded_msg['args'] = data['args']
+                    decoded_msg['kwargs'] = {}
             else:
                 decoded_msg['args'] = []
+                decoded_msg['kwargs'] = {}
 
     elif msg_type == "6":  # ack
         if '+' in data:

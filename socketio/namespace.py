@@ -205,6 +205,7 @@ class BaseNamespace(object):
                   self.emit('go_back', 'param1', id=packet['id'])
         """
         args = packet['args']
+        kwargs = packet['kwargs']
         name = packet['name']
         if not allowed_event_name_regex.match(name):
             self.error("unallowed_event_name",
@@ -216,9 +217,9 @@ class BaseNamespace(object):
         # the method arg and if you passed a dict, it will be a dict
         # as the first parameter.
 
-        return self.call_method_with_acl(method_name, packet, *args)
+        return self.call_method_with_acl(method_name, packet, *args, **kwargs)
 
-    def call_method_with_acl(self, method_name, packet, *args):
+    def call_method_with_acl(self, method_name, packet, *args, **kwargs):
         """You should always use this function to call the methods,
         as it checks if the user is allowed according to the ACLs.
 
@@ -231,9 +232,9 @@ class BaseNamespace(object):
                        'You do not have access to method "%s"' % method_name)
             return
 
-        return self.call_method(method_name, packet, *args)
+        return self.call_method(method_name, packet, *args, **kwargs)
 
-    def call_method(self, method_name, packet, *args):
+    def call_method(self, method_name, packet, *args, **kwargs):
         """This function is used to implement the two behaviors on dispatched
         ``on_*()`` and ``recv_*()`` method calls.
 
@@ -263,7 +264,7 @@ class BaseNamespace(object):
         if len(func_args) == 2 and func_args[1] == 'packet':
             return method(packet)
         else:
-            return method(*args)
+            return method(*args, **kwargs)
 
     def initialize(self):
         """This is called right after ``__init__``, on the initial
